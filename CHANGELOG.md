@@ -2,6 +2,11 @@
 
 All notable changes to MCP Tools for Elementor are documented in this file.
 
+## [Unreleased]
+
+### Added
+- **Betheme Muffin Builder support.** When the Betheme theme is active, 5 new tools read and build pages made with Betheme's native builder (`mfn-page-items`: sections > wraps > items, addressed by index path): `list-muffin-items`, `get-muffin-page`, `add-muffin-element` (section/wrap/item, with declarative nesting), `update-muffin-element`, `remove-muffin-element` (destructive). A **Betheme** tab appears on the Tools page only on sites running the theme. Item field names are best-effort — verify against an existing item with `get-muffin-page` `full:true`.
+
 ## [3.2.0]
 
 > A core-engine release. The bundled MCP Adapter becomes a Composer dependency arbitrated by the Jetpack Autoloader (robust coexistence with other adapter-bundling plugins). An opt-in **Compact tool mode** collapses the tool surface to 3 dispatcher meta-tools to escape client tool-count caps, and a richer discovery context hands agents the site's environment + active-plugin inventory. On Pro, the bundled **Agent Skills** (now **7** playbooks) become discoverable and loadable by any connected MCP agent at runtime, with a Modules-tab switch to turn that injection off.

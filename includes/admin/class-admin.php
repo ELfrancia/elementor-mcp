@@ -1468,6 +1468,7 @@ class EMCP_Tools_Admin {
 			'elementor' => __( 'Elementor', 'emcp-tools' ),
 			'wordpress' => __( 'WordPress', 'emcp-tools' ),
 			'gutenberg' => __( 'Gutenberg', 'emcp-tools' ),
+			'betheme'   => __( 'Betheme', 'emcp-tools' ),
 		);
 	}
 
@@ -1769,6 +1770,37 @@ class EMCP_Tools_Admin {
 						'label'       => __( 'Insert Pattern', 'emcp-tools' ),
 						'description' => __( 'Inserts a registered block pattern into a post.', 'emcp-tools' ),
 						'badges'      => array(),
+					),
+				),
+			),
+			'betheme_muffin'   => array(
+				'platform' => 'betheme',
+				'label'    => __( 'Betheme Muffin Builder', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/list-muffin-items'    => array(
+						'label'       => __( 'List Muffin Items', 'emcp-tools' ),
+						'description' => __( 'Lists common Betheme builder item types and their fields.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/get-muffin-page'      => array(
+						'label'       => __( 'Get Muffin Page', 'emcp-tools' ),
+						'description' => __( 'Returns a page\'s sections/wraps/items with an index path per element.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/add-muffin-element'   => array(
+						'label'       => __( 'Add Muffin Element', 'emcp-tools' ),
+						'description' => __( 'Adds a section, wrap or item to a Betheme page.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-muffin-element' => array(
+						'label'       => __( 'Update Muffin Element', 'emcp-tools' ),
+						'description' => __( 'Merges fields/attr/size into an existing element.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/remove-muffin-element' => array(
+						'label'       => __( 'Remove Muffin Element', 'emcp-tools' ),
+						'description' => __( 'Deletes a section, wrap or item and its children.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
 					),
 				),
 			),

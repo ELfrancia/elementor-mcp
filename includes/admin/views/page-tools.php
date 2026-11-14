@@ -21,6 +21,9 @@ $emcp_tools_total_count   = $this->get_total_tool_count();
 $emcp_tools_compact_mode  = '1' === (string) get_option( EMCP_Tools_Plugin::OPTION_DISPATCHER_MODE, '0' );
 
 $emcp_tools_tabs               = EMCP_Tools_Admin::platform_tabs();
+if ( ! EMCP_Tools_Muffin_Data::is_active() ) {
+	unset( $emcp_tools_tabs['betheme'] ); // Betheme tab only on sites running the theme.
+}
 $emcp_tools_buckets            = EMCP_Tools_Admin::partition_by_platform( $emcp_tools_all_tools );
 $emcp_tools_elementor_active   = EMCP_Tools_Bootstrap::elementor_active();
 
