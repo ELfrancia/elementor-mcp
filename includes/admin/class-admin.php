@@ -1782,6 +1782,11 @@ class EMCP_Tools_Admin {
 						'description' => __( 'Lists common Betheme builder item types and their fields.', 'emcp-tools' ),
 						'badges'      => array( 'read-only' ),
 					),
+					'emcp-tools/list-muffin-classes'  => array(
+						'label'       => __( 'List Muffin Classes', 'emcp-tools' ),
+						'description' => __( 'Lists the site\'s BeBuilder global classes (reusable styles) to apply to new elements.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
 					'emcp-tools/get-muffin-page'      => array(
 						'label'       => __( 'Get Muffin Page', 'emcp-tools' ),
 						'description' => __( 'Returns a page\'s sections/wraps/items with an index path per element.', 'emcp-tools' ),

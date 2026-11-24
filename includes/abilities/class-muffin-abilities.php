@@ -38,11 +38,41 @@ class EMCP_Tools_Muffin_Abilities {
 		$this->reg(
 			'emcp-tools/list-muffin-items',
 			__( 'List Muffin Items', 'emcp-tools' ),
-			__( 'Betheme Muffin Builder: lists common item types with their usual field names (best-effort). The page structure is section > wrap (column, size like 1/3) > item. Verify field names against an existing item with get-muffin-page full:true.', 'emcp-tools' ),
+			__( 'Betheme Muffin Builder: lists item types from Betheme\'s catalog with their field names and style selectors. Use type to inspect a specific item, or search to filter by keyword. Verify field names against an existing item with get-muffin-page full:true.', 'emcp-tools' ),
 			'execute_list_items',
 			'check_read_permission',
+			array(
+				'type'       => 'object',
+				'properties' => array(
+					'type'   => array(
+						'type'        => 'string',
+						'description' => __( 'Item type (e.g. heading, column, button). When set, returns full content fields and style selectors for this item.', 'emcp-tools' ),
+					),
+					'search' => array(
+						'type'        => 'string',
+						'description' => __( 'Search keyword to filter item types by name or title.', 'emcp-tools' ),
+					),
+				),
+			),
+			array(
+				'type'       => 'object',
+				'properties' => array(
+					'items' => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ),
+					'item'  => array( 'type' => 'object' ),
+					'count' => array( 'type' => 'integer' ),
+				),
+			),
+			true
+		);
+
+		$this->reg(
+			'emcp-tools/list-muffin-classes',
+			__( 'List Muffin Classes', 'emcp-tools' ),
+			__( 'Betheme Muffin Builder: lists the site\'s BeBuilder global classes (reusable styles the admin defined, e.g. "Hero section style" for headings). Each has an id (be_heading_xxx), the element type it styles and a title. Pass ids in `classes` on add/update-muffin-element so new elements match the site design. Prefer these over raw css_* attrs.', 'emcp-tools' ),
+			'execute_list_classes',
+			'check_read_permission',
 			array( 'type' => 'object', 'properties' => new stdClass() ),
-			array( 'type' => 'object', 'properties' => array( 'items' => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ) ) ),
+			array( 'type' => 'object', 'properties' => array( 'classes' => array( 'type' => 'array', 'items' => array( 'type' => 'object' ) ) ) ),
 			true
 		);
 
@@ -78,7 +108,7 @@ class EMCP_Tools_Muffin_Abilities {
 					'index'       => array( 'type' => 'integer', 'description' => __( 'Insert position among siblings; omit to append.', 'emcp-tools' ) ),
 					'element'     => array(
 						'type'        => 'object',
-						'description' => __( 'Section: {attr?, wraps?:[wrap]}. Wrap: {size?:"1/3", attr?, items?:[item]}. Item: {type:"heading", size?:"1/1", fields:{title:"Hi", tag:"h2"}}.', 'emcp-tools' ),
+						'description' => __( 'Section: {attr?, wraps?:[wrap]}. Wrap: {size?:"1/3", attr?, items?:[item]}. Item: {type:"heading", size?:"1/1", fields:{title:"Hi", header_tag:"h2"}, styles?:{"color":"#fff","font-size":"48px","text-align":"center","margin-top":"20px"}, classes?:["be_heading_xxx"]}. Use list-muffin-classes for site styles.', 'emcp-tools' ),
 					),
 				),
 				'required'   => array( 'post_id', 'element' ),
@@ -90,7 +120,7 @@ class EMCP_Tools_Muffin_Abilities {
 		$this->reg(
 			'emcp-tools/update-muffin-element',
 			__( 'Update Muffin Element', 'emcp-tools' ),
-			__( 'Betheme Muffin Builder: partial-merge update of the element at path — fields (items only), attr, size. Unspecified keys are kept.', 'emcp-tools' ),
+			__( 'Betheme Muffin Builder: partial-merge update of the element at path — fields (items only), styles (items only), attr, size, classes. Unspecified keys are kept.', 'emcp-tools' ),
 			'execute_update_element',
 			'check_write_permission',
 			array(
@@ -99,8 +129,14 @@ class EMCP_Tools_Muffin_Abilities {
 					'post_id' => $post_id,
 					'path'    => $path_schema + array( 'description' => __( 'Element path from get-muffin-page.', 'emcp-tools' ) ),
 					'fields'  => array( 'type' => 'object', 'description' => __( 'Item field values to merge.', 'emcp-tools' ) ),
+					'styles'  => array( 'type' => 'object', 'description' => __( 'Item styles to merge, e.g. {"color":"#fff","font-size":"48px","text-align":"center","margin-top":"20px"}. Translated to css_* attrs with Betheme selectors.', 'emcp-tools' ) ),
 					'attr'    => array( 'type' => 'object', 'description' => __( 'Style/attribute values to merge.', 'emcp-tools' ) ),
 					'size'    => array( 'type' => 'string', 'description' => __( 'Wrap/item width, e.g. 1/2.', 'emcp-tools' ) ),
+					'classes' => array(
+						'type'        => 'array',
+						'items'       => array( 'type' => 'string' ),
+						'description' => __( 'BeBuilder global class ids (items only), from list-muffin-classes. Replaces the current list; [] clears it.', 'emcp-tools' ),
+					),
 				),
 				'required'   => array( 'post_id', 'path' ),
 			),
@@ -174,17 +210,79 @@ class EMCP_Tools_Muffin_Abilities {
 		return $post_id && current_user_can( 'edit_post', $post_id );
 	}
 
+	/**
+	 * Non-blocking notices from the data layer (e.g. field ids not in the catalog).
+	 *
+	 * @return array
+	 */
+	private static function warnings(): array {
+		$w = EMCP_Tools_Muffin_Data::take_warnings();
+		return $w ? array( 'warnings' => $w ) : array();
+	}
+
 	// ---- executors ---------------------------------------------------------
+
+	/**
+	 * @param array $input Input.
+	 * @return array
+	 */
+	public function execute_list_items( $input = array() ): array {
+		$catalog = EMCP_Tools_Muffin_Data::item_catalog();
+
+		// Single item detail lookup
+		if ( ! empty( $input['type'] ) ) {
+			$type = strtolower( trim( (string) $input['type'] ) );
+			if ( ! isset( $catalog[ $type ] ) ) {
+				return array(
+					'error' => sprintf(
+						/* translators: %s: item type */
+						__( 'Unknown item type "%s". Call list-muffin-items without parameters to view all available types.', 'emcp-tools' ),
+						$type
+					),
+				);
+			}
+			$def = $catalog[ $type ];
+			return array(
+				'item' => array(
+					'type'           => $type,
+					'label'          => $def['label'] ?? $def['title'] ?? $type,
+					'title'          => $def['title'] ?? $def['label'] ?? $type,
+					'icon'           => $def['icon'] ?? '',
+					'content_fields' => $def['content_fields'] ?? array(),
+					'style_fields'   => $def['style_fields'] ?? array(),
+				),
+			);
+		}
+
+		// Filter by search keyword
+		$search = ! empty( $input['search'] ) ? strtolower( trim( (string) $input['search'] ) ) : '';
+
+		$rows = array();
+		foreach ( $catalog as $type => $def ) {
+			$label = (string) ( $def['label'] ?? $def['title'] ?? $type );
+			if ( '' !== $search ) {
+				if ( false === strpos( $type, $search ) && false === strpos( strtolower( $label ), $search ) ) {
+					continue;
+				}
+			}
+			$rows[] = array(
+				'type'   => $type,
+				'label'  => $label,
+				'fields' => $def['fields'] ?? array(),
+			);
+		}
+
+		return array(
+			'items' => $rows,
+			'count' => count( $rows ),
+		);
+	}
 
 	/**
 	 * @return array
 	 */
-	public function execute_list_items(): array {
-		$rows = array();
-		foreach ( EMCP_Tools_Muffin_Data::item_catalog() as $type => $def ) {
-			$rows[] = array( 'type' => $type, 'label' => $def['label'], 'fields' => $def['fields'] );
-		}
-		return array( 'items' => $rows );
+	public function execute_list_classes(): array {
+		return array( 'classes' => EMCP_Tools_Muffin_Data::global_classes() );
 	}
 
 	/**
@@ -214,8 +312,8 @@ class EMCP_Tools_Muffin_Abilities {
 			return $post;
 		}
 		$parent = EMCP_Tools_Muffin_Data::clean_path( $input['parent_path'] ?? array() );
-		if ( null === $parent || count( $parent ) > 2 ) {
-			return array( 'error' => __( 'parent_path must be [], [section] or [section, wrap].', 'emcp-tools' ) );
+		if ( null === $parent || count( $parent ) > 7 ) {
+			return array( 'error' => __( 'parent_path must be [], [section], [section, wrap] or a deeper item path (nested wraps).', 'emcp-tools' ) );
 		}
 		$element = isset( $input['element'] ) && is_array( $input['element'] ) ? $input['element'] : null;
 		if ( null === $element ) {
@@ -230,8 +328,8 @@ class EMCP_Tools_Muffin_Abilities {
 		if ( null === $tree ) {
 			return array( 'error' => __( 'parent_path does not resolve. Call get-muffin-page first.', 'emcp-tools' ) );
 		}
-		EMCP_Tools_Muffin_Data::save( (int) $post->ID, $tree );
-		return array( 'post_id' => (int) $post->ID, 'uid' => $node['uid'], 'parent_path' => $parent );
+		$css = EMCP_Tools_Muffin_Data::save( (int) $post->ID, $tree );
+		return array( 'post_id' => (int) $post->ID, 'uid' => $node['uid'], 'parent_path' => $parent, 'css_regenerated' => $css ) + self::warnings();
 	}
 
 	/**
@@ -247,13 +345,13 @@ class EMCP_Tools_Muffin_Abilities {
 		if ( ! $path ) {
 			return array( 'error' => __( 'path is required.', 'emcp-tools' ) );
 		}
-		$changes = array_intersect_key( (array) $input, array_flip( array( 'fields', 'attr', 'size' ) ) );
+		$changes = array_intersect_key( (array) $input, array_flip( array( 'fields', 'attr', 'size', 'classes', 'styles' ) ) );
 		$tree    = EMCP_Tools_Muffin_Data::update( EMCP_Tools_Muffin_Data::load( (int) $post->ID ), $path, $changes );
 		if ( is_string( $tree ) ) {
 			return array( 'error' => $tree );
 		}
-		EMCP_Tools_Muffin_Data::save( (int) $post->ID, $tree );
-		return array( 'post_id' => (int) $post->ID, 'path' => $path );
+		$css = EMCP_Tools_Muffin_Data::save( (int) $post->ID, $tree );
+		return array( 'post_id' => (int) $post->ID, 'path' => $path, 'css_regenerated' => $css ) + self::warnings();
 	}
 
 	/**
@@ -270,8 +368,8 @@ class EMCP_Tools_Muffin_Abilities {
 		if ( null === $tree ) {
 			return array( 'error' => __( 'path does not resolve to an element. Call get-muffin-page first.', 'emcp-tools' ) );
 		}
-		EMCP_Tools_Muffin_Data::save( (int) $post->ID, $tree );
-		return array( 'post_id' => (int) $post->ID, 'path' => $path );
+		$css = EMCP_Tools_Muffin_Data::save( (int) $post->ID, $tree );
+		return array( 'post_id' => (int) $post->ID, 'path' => $path, 'css_regenerated' => $css ) + self::warnings();
 	}
 
 	/**
