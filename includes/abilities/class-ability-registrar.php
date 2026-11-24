@@ -116,6 +116,13 @@ class EMCP_Tools_Ability_Registrar {
 		$gutenberg->register();
 		$this->ability_names = array_merge( $this->ability_names, $gutenberg->get_ability_names() );
 
+		// Betheme Muffin Builder abilities — only when the Betheme theme is active.
+		if ( EMCP_Tools_Muffin_Data::is_active() ) {
+			$muffin = new EMCP_Tools_Muffin_Abilities();
+			$muffin->register();
+			$this->ability_names = array_merge( $this->ability_names, $muffin->get_ability_names() );
+		}
+
 		// Compact tool mode dispatcher (list-tools/get-tool-schema/call-tool).
 		// Registered ALWAYS so wp_get_ability() resolves them, but deliberately
 		// NOT added to $this->ability_names — register_mcp_server() surfaces them

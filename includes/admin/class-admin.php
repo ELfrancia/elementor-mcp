@@ -1468,6 +1468,7 @@ class EMCP_Tools_Admin {
 			'elementor' => __( 'Elementor', 'emcp-tools' ),
 			'wordpress' => __( 'WordPress', 'emcp-tools' ),
 			'gutenberg' => __( 'Gutenberg', 'emcp-tools' ),
+			'betheme'   => __( 'Betheme', 'emcp-tools' ),
 		);
 	}
 
@@ -1768,6 +1769,82 @@ class EMCP_Tools_Admin {
 					'emcp-tools/insert-pattern'   => array(
 						'label'       => __( 'Insert Pattern', 'emcp-tools' ),
 						'description' => __( 'Inserts a registered block pattern into a post.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+				),
+			),
+			'betheme_muffin'   => array(
+				'platform' => 'betheme',
+				'label'    => __( 'Betheme Muffin Builder', 'emcp-tools' ),
+				'tools'    => array(
+					'emcp-tools/list-muffin-items'    => array(
+						'label'       => __( 'List Muffin Items', 'emcp-tools' ),
+						'description' => __( 'Lists common Betheme builder item types and their fields.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/list-muffin-classes'  => array(
+						'label'       => __( 'List Muffin Classes', 'emcp-tools' ),
+						'description' => __( 'Lists the site\'s BeBuilder global classes (reusable styles) to apply to new elements.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/get-muffin-page'      => array(
+						'label'       => __( 'Get Muffin Page', 'emcp-tools' ),
+						'description' => __( 'Returns a page\'s sections/wraps/items with an index path per element.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/add-muffin-element'   => array(
+						'label'       => __( 'Add Muffin Element', 'emcp-tools' ),
+						'description' => __( 'Adds a section, wrap or item to a Betheme page.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-muffin-element' => array(
+						'label'       => __( 'Update Muffin Element', 'emcp-tools' ),
+						'description' => __( 'Merges fields/attr/size into an existing element.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/remove-muffin-element' => array(
+						'label'       => __( 'Remove Muffin Element', 'emcp-tools' ),
+						'description' => __( 'Deletes a section, wrap or item and its children.', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+					),
+					'emcp-tools/get-muffin-class' => array(
+						'label'       => __( 'Get Muffin Class', 'emcp-tools' ),
+						'description' => __( 'Full definition of one BeBuilder global class.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/create-muffin-class' => array(
+						'label'       => __( 'Create Muffin Class', 'emcp-tools' ),
+						'description' => __( 'Creates a BeBuilder global class (reusable style) and regenerates its CSS.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/update-muffin-class' => array(
+						'label'       => __( 'Update Muffin Class', 'emcp-tools' ),
+						'description' => __( 'Renames or restyles a BeBuilder global class; every element using it updates.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/delete-muffin-class' => array(
+						'label'       => __( 'Delete Muffin Class', 'emcp-tools' ),
+						'description' => __( 'Deletes a BeBuilder global class (confirm:true required).', 'emcp-tools' ),
+						'badges'      => array( 'destructive' ),
+					),
+					'emcp-tools/get-betheme-options' => array(
+						'label'       => __( 'Get Betheme Options', 'emcp-tools' ),
+						'description' => __( 'Reads Betheme Theme Options by key or search.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/update-betheme-options' => array(
+						'label'       => __( 'Update Betheme Options', 'emcp-tools' ),
+						'description' => __( 'Changes existing Betheme Theme Options; returns previous values.', 'emcp-tools' ),
+						'badges'      => array(),
+					),
+					'emcp-tools/list-muffin-templates' => array(
+						'label'       => __( 'List Muffin Templates', 'emcp-tools' ),
+						'description' => __( 'Lists header/footer/sidemenu templates with conditions and options.', 'emcp-tools' ),
+						'badges'      => array( 'read-only' ),
+					),
+					'emcp-tools/update-muffin-post-options' => array(
+						'label'       => __( 'Update Muffin Post Options', 'emcp-tools' ),
+						'description' => __( 'Sets page/template options (mobile header, sidemenu styles…).', 'emcp-tools' ),
 						'badges'      => array(),
 					),
 				),
