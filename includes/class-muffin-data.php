@@ -292,15 +292,24 @@ class EMCP_Tools_Muffin_Data {
 				}
 				$wraps[] = $node;
 			}
-			return array(
+			$ver = isset( $in['ver'] ) ? (string) $in['ver'] : 'default';
+			if ( ! in_array( $ver, EMCP_Tools_Betheme_Store::SECTION_VERSIONS, true ) ) {
+				return 'ver must be one of: ' . implode( ', ', EMCP_Tools_Betheme_Store::SECTION_VERSIONS ) . '.';
+			}
+			$section = array(
 				'icon'    => 'section',
 				'uid'     => self::uid(),
 				'jsclass' => 'section',
 				'title'   => 'Section',
 				'attr'    => $attr,
-				'ver'     => 'default',
+				'ver'     => $ver,
 				'wraps'   => $wraps,
 			);
+			$classes = self::clean_classes( $in['classes'] ?? array() );
+			if ( $classes ) {
+				$section['be_classes'] = $classes;
+			}
+			return $section;
 		}
 
 		$size = self::clean_size( $in['size'] ?? '1/1' );
@@ -317,7 +326,7 @@ class EMCP_Tools_Muffin_Data {
 				}
 				$items[] = $node;
 			}
-			return array(
+			$wrap = array(
 				'icon'           => 'wrap',
 				'uid'            => self::uid(),
 				'jsclass'        => 'wrap',
@@ -326,6 +335,11 @@ class EMCP_Tools_Muffin_Data {
 				'tablet_resized' => '0',
 				'items'          => $items,
 			) + self::size_keys( $size, true );
+			$classes = self::clean_classes( $in['classes'] ?? array() );
+			if ( $classes ) {
+				$wrap['be_classes'] = $classes;
+			}
+			return $wrap;
 		}
 
 		$type = isset( $in['type'] ) ? (string) $in['type'] : '';
@@ -615,8 +629,22 @@ class EMCP_Tools_Muffin_Data {
 			if ( isset( $changes['styles'] ) ) {
 				return 'styles can only be set on items.';
 			}
-			if ( isset( $changes['classes'] ) ) {
-				return 'classes can only be set on items.';
+			if ( isset( $changes['classes'] ) && is_array( $changes['classes'] ) ) {
+				$classes = self::clean_classes( $changes['classes'] );
+				if ( $classes ) {
+					$el['be_classes'] = $classes;
+				} else {
+					unset( $el['be_classes'] );
+				}
+			}
+			if ( isset( $changes['ver'] ) ) {
+				if ( 0 !== $depth ) {
+					return 'ver can only be set on sections.';
+				}
+				if ( ! in_array( (string) $changes['ver'], EMCP_Tools_Betheme_Store::SECTION_VERSIONS, true ) ) {
+					return 'ver must be one of: ' . implode( ', ', EMCP_Tools_Betheme_Store::SECTION_VERSIONS ) . '.';
+				}
+				$el['ver'] = (string) $changes['ver'];
 			}
 			if ( isset( $changes['attr'] ) && is_array( $changes['attr'] ) ) {
 				$el['attr'] = array_merge( (array) ( $el['attr'] ?? array() ), self::clean_value( $changes['attr'] ) );
@@ -666,13 +694,33 @@ class EMCP_Tools_Muffin_Data {
 		foreach ( array_values( $tree ) as $s => $section ) {
 			$wraps = array();
 			foreach ( array_values( (array) ( $section['wraps'] ?? array() ) ) as $w => $wrap ) {
-				$wraps[] = array(
-					'path'  => array( $s, $w ),
-					'size'  => (string) ( $wrap['size'] ?? '1/1' ),
-					'items' => self::summarize_items( (array) ( $wrap['items'] ?? array() ), array( $s, $w ), $full ),
+				$row = array(
+					'path' => array( $s, $w ),
+					'uid'  => (string) ( $wrap['uid'] ?? '' ),
+					'size' => (string) ( $wrap['size'] ?? '1/1' ),
 				);
+				if ( ! empty( $wrap['be_classes'] ) ) {
+					$row['classes'] = array_values( (array) $wrap['be_classes'] );
+				}
+				if ( $full && ! empty( $wrap['attr'] ) ) {
+					$row['attr'] = $wrap['attr'];
+				}
+				$row['items'] = self::summarize_items( (array) ( $wrap['items'] ?? array() ), array( $s, $w ), $full );
+				$wraps[]      = $row;
 			}
-			$out[] = array( 'path' => array( $s ), 'wraps' => $wraps );
+			$row = array(
+				'path' => array( $s ),
+				'uid'  => (string) ( $section['uid'] ?? '' ),
+				'ver'  => (string) ( $section['ver'] ?? 'default' ),
+			);
+			if ( ! empty( $section['be_classes'] ) ) {
+				$row['classes'] = array_values( (array) $section['be_classes'] );
+			}
+			if ( $full && ! empty( $section['attr'] ) ) {
+				$row['attr'] = $section['attr'];
+			}
+			$row['wraps'] = $wraps;
+			$out[]        = $row;
 		}
 		return $out;
 	}

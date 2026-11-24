@@ -107,6 +107,7 @@ class EMCP_Tools_Bootstrap {
 		require_once EMCP_TOOLS_DIR . 'includes/class-block-tree.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-gutenberg-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-muffin-data.php';
+		require_once EMCP_TOOLS_DIR . 'includes/class-betheme-store.php';
 		require_once EMCP_TOOLS_DIR . 'includes/abilities/class-muffin-abilities.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-admin-bar.php';
 		require_once EMCP_TOOLS_DIR . 'includes/class-github-updater.php';
